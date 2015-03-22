@@ -134,48 +134,57 @@ def parse_response(r):
         return dict(error=r.text)
 
 def parse_cli(args, endpoints, graph_url):
-    parser = argparse.ArgumentParser(description = 'paginate through the Facebook Graph API')
+    parser = argparse.ArgumentParser(
+        description='Paginate through the Facebook Graph API',
+        epilog='')
     add = parser.add_argument
 
-    add('--overwrite', action='store_true',
-        help='overwrite output files')
-    add('-v', '--verbose', action='store_true',
-        help='print progress information on standard error')
-    add('--type', choices=('json', 'json_pretty', 'yaml'), default='json',
-        help='set output file type [%(default)s]')
-    add('--format', default='%(endpoint)s-%(object)s-%(i)04d.%(type)s',
-        help='set output file format [%(default)s]')
-    add('-d', '--destination', default='.', metavar='DIRECTORY',
+    out = parser.add_argument_group('output').add_argument
+    out('-d', '--destination', default='.', metavar='DIRECTORY',
         help='set output directory [%(default)s]')
+    out('--type', choices=('json', 'json_pretty', 'yaml'), default='json',
+        help='set output file type [%(default)s]')
+    out('--format', default='%(endpoint)s-%(object)s-%(i)04d.%(type)s',
+        help='set output file format [%(default)s]')
+    out('--overwrite', action='store_true',
+        help='overwrite output files')
+    out('-v', '--verbose', action='store_true',
+        help='print progress information on standard error')
 
-    add('-u', '--url', default=graph_url,
-        help='set facebook graph url [%(default)s]')
-    add('-q', '--query-parameters', nargs=2, action='append', metavar=('KEY', 'VALUE'),
-        help='specify additional query parameters')
+    req = parser.add_argument_group('requests').add_argument
+    req('-u', '--url', default=graph_url,
+        help='set facebook graph base url [%(default)s]')
+    req('-q', '--query-parameters', nargs=2, action='append', metavar=('KEY', 'VALUE'),
+        help='specify additional query parameters, e.g. -q fields id,message')
 
     limits = parser.add_argument_group('limits').add_argument
     limits('-l', '--limit', type=int, default=25,
-        help='set the starting request limit [%(default)s]')
+        help='set the initial request limit [%(default)s]')
     limits('--limit-max', type=int, default=3000,
         help='set the maximum request limit [%(default)s]')
     limits('--limit-factor', type=int, default=2,
         help='set limit multiplication factor [%(default)s]')
 
-    tokens = parser.add_mutually_exclusive_group(required=True).add_argument
-    tokens('-t', '--tokens', nargs='+', metavar='ACCESS_TOKEN',
+    tokens = parser.add_argument_group('tokens').add_argument
+    t1 = tokens('-t', '--tokens', nargs='+', metavar='TOKEN',
         help='provide a pool of access tokens for performing requests')
-    tokens('--tokens-file', type=argparse.FileType('rb'), metavar='FILENAME',
-        help='read tokens from a file one per line')
+    t2 = tokens('--tokens-file', type=argparse.FileType('rb'), metavar='FILENAME',
+        help='read access tokens from a file one per line')
 
-    objects = parser.add_mutually_exclusive_group(required=True).add_argument
-    objects('-o', '--objects', metavar='ID', nargs='+',
-        help='facebook objects to fetch data for')
-    objects('--objects-file', type=argparse.FileType('rb'), metavar='FILENAME',
+    objects = parser.add_argument_group('targets').add_argument
+    objects('-e', '--endpoint', choices=endpoints, required=True,
+            help='choose request endpoint')
+    o1 = objects('objects', metavar='ID', nargs='*',
+        help='facebook object IDs to retrieve data for')
+    o2 = objects('--objects-file', type=argparse.FileType('rb'), metavar='FILENAME',
         help='read object IDs from a file one per line')
 
-    add('-e', '--endpoint', choices=endpoints, required=True,
-        help='choose endpoint')
-    return parser.parse_args(args)
+    opts = parser.parse_args(args)
+    if not (opts.objects or opts.objects_file):
+        parser.error("at least one %s or %s is required" % (o1.metavar, '/'.join(o2.option_strings)))
+    if not (opts.tokens or opts.tokens_file):
+        parser.error("at least one of %s or %s is required" % ('/'.join(t1.option_strings), '/'.join(t2.option_strings)))
+    return opts
 
 
 if __name__ == '__main__':
