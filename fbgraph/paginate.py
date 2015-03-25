@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 
 """
-Retrieve likes or comments for a specific Facebook post through the Graph API.
+Retrieve posts, likes, or comments for Facebook objects through the Graph API.
 """
 
 import requests
 import sys, os, json, collections, argparse
 
 
-GRAPH_URL ='https://graph.facebook.com/v2.2'
+GRAPH_URL = 'https://graph.facebook.com/v2.2'
 
 def main(args):
     opts = parse_cli(args[1:], default_endpoints().keys(), GRAPH_URL)
@@ -121,7 +121,7 @@ def write_flush(s):
 
 def write_file(filename, data, overwrite=False):
     assert overwrite or not os.path.exists(filename) # XXX: race condition
-    with open(filename, 'wb') as fd:
+    with open(filename, 'wt') as fd:
         fd.write(data)
 
 def geometric_ramp_up(multiplier, ceiling):
@@ -168,7 +168,7 @@ def parse_cli(args, endpoints, graph_url):
     tokens = parser.add_argument_group('tokens').add_argument
     t1 = tokens('-t', '--tokens', nargs='+', metavar='TOKEN',
         help='provide a pool of access tokens for performing requests')
-    t2 = tokens('--tokens-file', type=argparse.FileType('rb'), metavar='FILENAME',
+    t2 = tokens('--tokens-file', type=argparse.FileType('rt'), metavar='FILENAME',
         help='read access tokens from a file one per line')
 
     objects = parser.add_argument_group('targets').add_argument
@@ -176,7 +176,7 @@ def parse_cli(args, endpoints, graph_url):
             help='choose request endpoint')
     o1 = objects('objects', metavar='ID', nargs='*',
         help='facebook object IDs to retrieve data for')
-    o2 = objects('--objects-file', type=argparse.FileType('rb'), metavar='FILENAME',
+    o2 = objects('--objects-file', type=argparse.FileType('rt'), metavar='FILENAME',
         help='read object IDs from a file one per line')
 
     opts = parser.parse_args(args)
