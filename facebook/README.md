@@ -63,7 +63,7 @@ The `TOKEN` environment variable is assumed to refer to a valid access token.
 1.  Let's see what Lady Gaga has been up to in the last 10 days by fetching all of her page's posts:
 
     ```bash
-    ./paginate.py -d gaga -t "$TOKEN" -q since $(date -d-10days +%s) -q fields from,story,message -e feed ladygaga
+    ./graphy.py -d gaga -t "$TOKEN" -q since $(date -d-10days +%s) -q fields from,story,message -e feed ladygaga
     ```
 
     ```bash
@@ -92,7 +92,7 @@ The `TOKEN` environment variable is assumed to refer to a valid access token.
 
 
     ```bash
-    jq -r '.content.data[]|.id' gaga/feed-ladygaga-000* | sort -u | xargs -L 4 -P 4 ./paginate.py -d gaga -t "$TOKEN" -q fields 'from.fields(name),message' -e comments 
+    jq -r '.content.data[]|.id' gaga/feed-ladygaga-000* | sort -u | xargs -L 4 -P 4 ./graphy.py -d gaga -t "$TOKEN" -q fields 'from.fields(name),message' -e comments 
     ```
 
     Be careful when running commands like the above: access tokens have rate limits associated with them and you could easily exceed them. It makes more sense to specify more than one access token, through the `-t|--tokens` or `--tokens-file` options. Requests will then alternate between them. This approach is not without caveats of its own however, since user IDs returned by the graph are app-scoped, and comment/like cursors may not be valid across tokens.
