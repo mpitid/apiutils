@@ -5,6 +5,8 @@ A Python script to fetch posts, likes, or comments from the Facebook Graph API.
 
 The script accepts a set of access tokens and object IDs along with an endpoint (or edge). It retrieves all data associated with that endpoint for each object, cycling through the access tokens with every request.
 
+Run `./graphy.py --help` for a full list of options.
+
 ## Endpoints
 
 Currently 4 different endpoints are supported:
