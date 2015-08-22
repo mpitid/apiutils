@@ -1,0 +1,38 @@
+#!/usr/bin/env python
+
+import sys, argparse
+
+def main(args):
+    opts = parse_cli(args[1:])
+    conversion = tag_window if opts.reverse else post_date
+    entries = sys.stdin if not opts.entries else opts.entries
+    for entry in entries:
+        print(conversion(entry))
+    return 0
+
+EPOCH = 1314220021721
+
+def post_date(post_id):
+    base = long(post_id.split('_')[0]) >> (64 - 41)
+    return (base + EPOCH) / 1000
+
+def tag_window(timestamp):
+    base = int(timestamp) * 1000 - EPOCH
+    return base << (64 - 41)
+
+
+def parse_cli(args):
+    parser = argparse.ArgumentParser(
+        description='Convert Instagram post IDs to Unix timestamps and vice versa')
+    parser.add_argument(
+        '-r', '--reverse', action='store_true',
+        help='convert Unix timestamps to post IDs')
+    parser.add_argument(
+        'entries', nargs='*',
+        help='post IDs or timestamps to convert (1 entry per line from STDIN if omitted)')
+    return parser.parse_args(args)
+
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv))
+
