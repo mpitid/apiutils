@@ -137,7 +137,8 @@ def extract_tags(c):
     pagination = c.get('pagination', {})
     cursors = dict()
     max_id = pagination.get('next_max_tag_id')
-    max_id = min(int(e['id'].split('_')[0]) for e in c.get('data', []))
+    if max_id is None and c.get('data', []):
+        max_id = min(int(e['id'].split('_')[0]) for e in c.get('data', []))
     #min_id = pagination.get('min_tag_id') # How about keeping the existing one?
     if max_id is not None:
         cursors['max_tag_id'] = max_id
